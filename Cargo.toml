@@ -1,5 +1,5 @@
 [package]
-name = "rooted"
+name = "engineRustLegionBracketLib"
 version = "0.1.0"
 authors = ["dwino"]
 edition = "2018"

@@ -575,6 +575,17 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e78d4f1cc4ae33bbfc157ed5d5a5ef3bc29227303d595861deb238fcec4e9457"
 
 [[package]]
+name = "engineRustLegionBracketLib"
+version = "0.1.0"
+dependencies = [
+ "bracket-lib",
+ "legion",
+ "ron",
+ "serde",
+ "smallvec",
+]
+
+[[package]]
 name = "erased-serde"
 version = "0.3.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1496,17 +1507,6 @@ dependencies = [
  "base64",
  "bitflags",
  "serde",
-]
-
-[[package]]
-name = "rooted"
-version = "0.1.0"
-dependencies = [
- "bracket-lib",
- "legion",
- "ron",
- "serde",
- "smallvec",
 ]
 
 [[package]]
