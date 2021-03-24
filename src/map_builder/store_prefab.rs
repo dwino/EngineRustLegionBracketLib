@@ -42,7 +42,7 @@ pub fn apply(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
         dimensions.for_each(|pt| {
             let idx = mb.map.point2d_to_index(pt);
             let distance = dijkstra_map.map[idx];
-            if distance < 2000.0 && distance > 20.0 && mb.exit_start != pt {
+            if distance < 2000.0 && distance > 20.0 && mb.amulet_start != pt {
                 can_place = true;
             }
         });
@@ -50,7 +50,7 @@ pub fn apply(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
         if can_place {
             placement = Some(Point::new(dimensions.x1, dimensions.y1));
             let points = dimensions.point_set();
-            mb.spawns.retain(|pt| !points.contains(pt));
+            mb.monster_spawns.retain(|pt| !points.contains(pt));
         }
         attempts += 1;
     }
@@ -69,7 +69,7 @@ pub fn apply(mb: &mut MapBuilder, rng: &mut RandomNumberGenerator) {
                 match c {
                     'M' => {
                         mb.map.tiles[idx] = TileType::Floor;
-                        mb.spawns.push(Point::new(tx, ty));
+                        mb.monster_spawns.push(Point::new(tx, ty));
                     }
                     '-' => mb.map.tiles[idx] = TileType::Floor,
                     '#' => mb.map.tiles[idx] = TileType::Wall,

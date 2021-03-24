@@ -1,6 +1,7 @@
 #![warn(clippy::pedantic)]
 use std::collections::HashSet;
 
+mod camera;
 mod components;
 mod dkm;
 mod eco_camera;
@@ -9,9 +10,7 @@ mod forage_map;
 mod game_mode;
 mod map;
 mod map_builder;
-mod rl_camera;
 mod rl_state;
-mod sm_state;
 mod spawner;
 mod systems;
 
@@ -27,6 +26,7 @@ mod prelude {
     pub const TILE_DIMENSIONS_MAP: i32 = 13;
     pub const TILE_DIMENSIONS_TOOLTIP: i32 = TILE_DIMENSIONS_MAP / 2;
     pub const TOOLTIP_SCALE: i32 = TILE_DIMENSIONS_MAP / TILE_DIMENSIONS_TOOLTIP;
+    pub use crate::camera::*;
     pub use crate::components::*;
     pub use crate::dkm::*;
     pub use crate::eco_camera::*;
@@ -35,9 +35,7 @@ mod prelude {
     pub use crate::game_mode::*;
     pub use crate::map::*;
     pub use crate::map_builder::*;
-    pub use crate::rl_camera::*;
     pub use crate::rl_state::*;
-    pub use crate::sm_state::*;
     pub use crate::spawner::FruitType;
     pub use crate::spawner::*;
     pub use crate::systems::*;
@@ -49,9 +47,12 @@ struct State {
     ecs: World,
     mode: GameMode,
     resources: Resources,
-    sm_input_systems: Schedule,
-    sm_employee_systems: Schedule,
-    sm_customers_systems: Schedule,
+    rl_input_systems: Schedule,
+    rl_player_systems: Schedule,
+    rl_creature_and_plant_systems: Schedule,
+    eco_input_system: Schedule,
+    eco_logic_systems: Schedule,
+    eco_render_systems: Schedule,
 }
 
 impl State {
@@ -62,9 +63,12 @@ impl State {
             ecs,
             resources,
             mode: GameMode::Menu,
-            sm_input_systems: build_sm_input_scheduler(),
-            sm_employee_systems: build_sm_employee_scheduler(),
-            sm_customers_systems: build_sm_customers_scheduler(),
+            rl_input_systems: build_rl_input_scheduler(),
+            rl_player_systems: build_rl_player_scheduler(),
+            rl_creature_and_plant_systems: build_rl_creature_and_plant_scheduler(),
+            eco_input_system: build_input_scheduler(),
+            eco_logic_systems: build_logic_scheduler(),
+            eco_render_systems: build_render_scheduler(),
         }
     }
 
@@ -73,36 +77,43 @@ impl State {
     fn main_menu(&mut self, ctx: &mut BTerm) {
         ctx.set_active_console(0);
         ctx.cls();
-        ctx.print_centered(5, "Superm@rket");
+        ctx.print_centered(5, "RooTed");
         ctx.print_centered(8, "(R) Roguelike Mode");
+        ctx.print_centered(9, "(E) Ecosystem Mode");
         ctx.print_centered(10, "(Q) Quit");
 
         if let Some(key) = ctx.key {
             match key {
-                VirtualKeyCode::R => self.supermarket_mode(),
+                VirtualKeyCode::R => self.roguelike_mode(),
+                VirtualKeyCode::E => self.ecosystem_mode(),
                 VirtualKeyCode::Q => ctx.quitting = true,
                 _ => {}
             }
         }
     }
-    fn supermarket_mode(&mut self) {
-        self.init_sm_game_state();
+    fn roguelike_mode(&mut self) {
+        self.init_rl_game_state();
         self.mode = GameMode::RogueLike;
+    }
+    fn ecosystem_mode(&mut self) {
+        self.init_eco_game_state();
+        self.mode = GameMode::Ecosystem;
     }
 
     //MODE:ROGUELIKE
     ////////////////
-    fn init_sm_game_state(&mut self) {
+    fn init_rl_game_state(&mut self) {
         self.ecs = World::default();
         self.resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let mut map_builder = MapBuilder::new(&mut rng);
         spawn_player(&mut self.ecs, map_builder.player_start);
-        spawn_level(&mut self.ecs, &mut rng, 0, &map_builder.spawns);
+        let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
+        map_builder.map.tiles[exit_idx] = TileType::Exit;
+        spawn_level(&mut self.ecs, &mut rng, 0, &map_builder.monster_spawns);
         self.resources.insert(map_builder.map);
-        self.resources
-            .insert(RlCamera::new(map_builder.player_start));
-        self.resources.insert(SmState::AwaitingInput);
+        self.resources.insert(Camera::new(map_builder.player_start));
+        self.resources.insert(RlState::AwaitingInput);
         self.resources.insert(map_builder.theme);
     }
 
@@ -116,32 +127,32 @@ impl State {
         self.resources.insert(ctx.key);
         ctx.set_active_console(0);
         self.resources.insert(Point::from_tuple(ctx.mouse_pos()));
-        let current_state = *self.resources.get::<SmState>().unwrap();
+        let current_state = *self.resources.get::<RlState>().unwrap();
         match current_state {
-            SmState::AwaitingInput => self
-                .sm_input_systems
+            RlState::AwaitingInput => self
+                .rl_input_systems
                 .execute(&mut self.ecs, &mut self.resources),
-            SmState::EmployeeTurn => {
-                self.sm_employee_systems
+            RlState::PlayerTurn => {
+                self.rl_player_systems
                     .execute(&mut self.ecs, &mut self.resources);
             }
-            SmState::CustomerTurn => self
-                .sm_customers_systems
+            RlState::MonsterTurn => self
+                .rl_creature_and_plant_systems
                 .execute(&mut self.ecs, &mut self.resources),
-            SmState::GameOver => {
-                self.sm_game_over(ctx);
+            RlState::GameOver => {
+                self.rl_game_over(ctx);
             }
-            SmState::Victory => {
-                self.sm_victory(ctx);
+            RlState::Victory => {
+                self.rl_victory(ctx);
             }
-            SmState::NextLevel => {
-                self.sm_advance_level();
+            RlState::NextLevel => {
+                self.rl_advance_level();
             }
         }
         render_draw_buffer(ctx).expect("Render error");
     }
 
-    fn sm_advance_level(&mut self) {
+    fn rl_advance_level(&mut self) {
         let player_entity = *<Entity>::query()
             .filter(component::<Player>())
             .iter(&self.ecs)
@@ -191,20 +202,25 @@ impl State {
                 pos.x = map_builder.player_start.x;
                 pos.y = map_builder.player_start.y;
             });
+        if map_level == 2 {
+            spawn_magic_droplet(&mut self.ecs, map_builder.amulet_start);
+        } else {
+            let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
+            map_builder.map.tiles[exit_idx] = TileType::Exit;
+        }
         spawn_level(
             &mut self.ecs,
             &mut rng,
             map_level as usize,
-            &map_builder.spawns,
+            &map_builder.monster_spawns,
         );
         self.resources.insert(map_builder.map);
-        self.resources
-            .insert(RlCamera::new(map_builder.player_start));
-        self.resources.insert(SmState::AwaitingInput);
+        self.resources.insert(Camera::new(map_builder.player_start));
+        self.resources.insert(RlState::AwaitingInput);
         self.resources.insert(map_builder.theme);
     }
 
-    fn sm_game_over(&mut self, ctx: &mut BTerm) {
+    fn rl_game_over(&mut self, ctx: &mut BTerm) {
         ctx.set_active_console(2);
         ctx.print_color_centered(2, RED, BLACK, "Your quest has ended.");
         ctx.print_color_centered(
@@ -228,11 +244,11 @@ impl State {
         ctx.print_color_centered(9, GREEN, BLACK, "Press 1 to play again.");
 
         if let Some(VirtualKeyCode::Key1) = ctx.key {
-            self.init_sm_game_state();
+            self.init_rl_game_state();
         }
     }
 
-    fn sm_victory(&mut self, ctx: &mut BTerm) {
+    fn rl_victory(&mut self, ctx: &mut BTerm) {
         ctx.set_active_console(2);
         ctx.print_color_centered(2, GREEN, BLACK, "You have won!");
         ctx.print_color_centered(
@@ -249,8 +265,58 @@ impl State {
         );
         ctx.print_color_centered(7, GREEN, BLACK, "Press 1 to play again.");
         if let Some(VirtualKeyCode::Key1) = ctx.key {
-            self.init_sm_game_state();
+            self.init_rl_game_state();
         }
+    }
+
+    //MODE:ECOSYSTEM
+    ////////////////
+    fn init_eco_game_state(&mut self) {
+        self.ecs = World::default();
+        self.resources = Resources::default();
+        let mut rng = RandomNumberGenerator::new();
+        let map_builder = MapBuilder::new(&mut rng);
+        spawn_foraging_level(
+            &mut self.ecs,
+            &map_builder.map,
+            &map_builder.map.forage_map.nest_positions,
+            &map_builder.map.forage_map.forage_positions,
+        );
+        self.resources.insert(map_builder.map);
+        self.resources.insert(EcoCamera::new(Point::new(
+            SCREEN_WIDTH / 2,
+            SCREEN_HEIGHT / 2,
+        )));
+        self.resources.insert(EcoState::Play);
+        self.resources.insert(map_builder.theme);
+    }
+
+    fn execute_eco_game_state(&mut self, ctx: &mut BTerm) {
+        ctx.set_active_console(0);
+        ctx.cls();
+        ctx.set_active_console(1);
+        ctx.cls();
+        ctx.set_active_console(2);
+        ctx.cls();
+        self.resources.insert(ctx.key);
+        ctx.set_active_console(0);
+        self.resources.insert(Point::from_tuple(ctx.mouse_pos()));
+        let current_state = *self.resources.get::<EcoState>().unwrap();
+
+        self.eco_input_system
+            .execute(&mut self.ecs, &mut self.resources);
+
+        match current_state {
+            EcoState::Play => {
+                self.eco_logic_systems
+                    .execute(&mut self.ecs, &mut self.resources);
+            }
+            EcoState::Pause => {}
+        }
+        self.eco_render_systems
+            .execute(&mut self.ecs, &mut self.resources);
+
+        render_draw_buffer(ctx).expect("Render error");
     }
 }
 
@@ -259,7 +325,7 @@ impl GameState for State {
         match self.mode {
             GameMode::Menu => self.main_menu(ctx),
             GameMode::RogueLike => self.execute_rl_game_state(ctx),
-            _ => {}
+            GameMode::Ecosystem => self.execute_eco_game_state(ctx),
         }
     }
 }

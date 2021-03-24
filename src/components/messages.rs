@@ -36,6 +36,8 @@ pub struct WantsEndTargeting {}
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct WantsEndInput(pub RlState);
 #[derive(Clone, Copy, Debug, PartialEq)]
+pub struct WantsEndSmInput(pub SmState);
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub struct WantsStateSwitch(pub EcoState);
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct WantsToPatrolRandomly {}

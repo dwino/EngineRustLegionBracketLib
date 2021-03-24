@@ -9,8 +9,8 @@ impl MapArchitect for VornoiArchitect {
             map: Map::new(SCREEN_WIDTH, SCREEN_HEIGHT),
             rooms: Vec::new(),
             player_start: Point::zero(),
-            amulet_start: Point::zero(),
-            monster_spawns: Vec::new(),
+            exit_start: Point::zero(),
+            spawns: Vec::new(),
             theme: super::themes::RootedTheme::new(),
         };
 
@@ -58,7 +58,7 @@ impl MapArchitect for VornoiArchitect {
         }
 
         let start = find_start();
-        mb.monster_spawns = mb.spawn_monsters(start, rng);
+        mb.spawns = mb.spawn_monsters(start, rng);
         mb
     }
 }

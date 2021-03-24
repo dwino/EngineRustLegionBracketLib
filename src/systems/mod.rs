@@ -1,22 +1,55 @@
 use crate::prelude::*;
 
 mod ai;
-mod combat;
-mod digging;
 mod eco;
-mod fov;
 mod rl;
-mod targeting;
-mod use_items;
+mod sm;
+mod varia;
+
+// SUPERMARKET_MODE
+
+pub fn build_sm_input_scheduler() -> Schedule {
+    Schedule::builder()
+        .add_system(sm::input::input_system())
+        .flush()
+        .add_system(sm::map_render::map_render_system())
+        .add_system(sm::entity_render::entity_render_system())
+        .add_system(sm::hud::hud_system())
+        .add_system(sm::tooltips::tooltips_system())
+        .add_system(sm::end_input::end_input_system())
+        .build()
+}
+
+pub fn build_sm_employee_scheduler() -> Schedule {
+    Schedule::builder()
+        .add_system(sm::use_items::use_items_system())
+        .flush()
+        .add_system(sm::movement::movement_system())
+        .flush()
+        .add_system(sm::map_render::map_render_system())
+        .add_system(sm::entity_render::entity_render_system())
+        .add_system(sm::hud::hud_system())
+        .add_system(sm::end_turn::end_turn_system())
+        .build()
+}
+
+pub fn build_sm_customers_scheduler() -> Schedule {
+    Schedule::builder()
+        .add_system(sm::map_render::map_render_system())
+        .add_system(sm::entity_render::entity_render_system())
+        .add_system(sm::hud::hud_system())
+        .add_system(sm::end_turn::end_turn_system())
+        .build()
+}
 
 // ROGUELIKE_MODE
 
 pub fn build_rl_input_scheduler() -> Schedule {
     Schedule::builder()
         .add_system(rl::input::input_system())
-        .add_system(fov::fov_system())
+        .add_system(varia::fov::fov_system())
         .flush()
-        .add_system(targeting::targetting_system())
+        .add_system(varia::targeting::targetting_system())
         .flush()
         .add_system(rl::map_render::map_render_system())
         .add_system(rl::entity_render::entity_render_system())
@@ -28,12 +61,12 @@ pub fn build_rl_input_scheduler() -> Schedule {
 
 pub fn build_rl_player_scheduler() -> Schedule {
     Schedule::builder()
-        .add_system(use_items::use_items_system())
-        .add_system(combat::combat_system())
+        .add_system(varia::use_items::use_items_system())
+        .add_system(varia::combat::combat_system())
         .flush()
         .add_system(rl::movement::movement_system())
         .flush()
-        .add_system(fov::fov_system())
+        .add_system(varia::fov::fov_system())
         .flush()
         .add_system(rl::map_render::map_render_system())
         .add_system(rl::entity_render::entity_render_system())
@@ -57,12 +90,12 @@ pub fn build_rl_creature_and_plant_scheduler() -> Schedule {
         .add_system(ai::spawning_equipment::spawning_equipment_system())
         // .add_system(ai::spawning_forager::spawning_forager_system())
         .flush()
-        .add_system(use_items::use_items_system())
-        .add_system(combat::combat_system())
+        .add_system(varia::use_items::use_items_system())
+        .add_system(varia::combat::combat_system())
         .flush()
         .add_system(rl::movement::movement_system())
         .flush()
-        .add_system(fov::fov_system())
+        .add_system(varia::fov::fov_system())
         .flush()
         .add_system(rl::map_render::map_render_system())
         .add_system(rl::entity_render::entity_render_system())
@@ -91,13 +124,13 @@ pub fn build_logic_scheduler() -> Schedule {
         .add_system(ai::spawning_forager::spawning_forager_system())
         .flush()
         .flush()
-        .add_system(use_items::use_items_system())
-        .add_system(combat::combat_system())
+        .add_system(varia::use_items::use_items_system())
+        .add_system(varia::combat::combat_system())
         .flush()
         .add_system(eco::movement::movement_system())
-        .add_system(digging::digging_system())
+        .add_system(varia::digging::digging_system())
         .flush()
-        .add_system(fov::fov_system())
+        .add_system(varia::fov::fov_system())
         .flush()
         .build()
 }

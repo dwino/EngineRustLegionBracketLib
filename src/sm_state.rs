@@ -1,8 +1,8 @@
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub enum RlState {
+pub enum SmState {
     AwaitingInput,
-    PlayerTurn,
-    MonsterTurn,
+    EmployeeTurn,
+    CustomerTurn,
     GameOver,
     Victory,
     NextLevel,

@@ -12,8 +12,8 @@ impl MapArchitect for RoomsArchitect {
             map: Map::new(SCREEN_WIDTH, SCREEN_HEIGHT),
             rooms: Vec::new(),
             player_start: Point::zero(),
-            amulet_start: Point::zero(),
-            monster_spawns: Vec::new(),
+            exit_start: Point::zero(),
+            spawns: Vec::new(),
             theme: super::themes::RootedTheme::new(),
         };
 
@@ -21,9 +21,9 @@ impl MapArchitect for RoomsArchitect {
         build_random_rooms(&mut mb, rng);
         build_corridors(&mut mb, rng);
         mb.player_start = mb.rooms[0].center();
-        mb.amulet_start = mb.find_most_distant();
+        mb.exit_start = mb.find_most_distant();
         for room in mb.rooms.iter().skip(1) {
-            mb.monster_spawns.push(room.center());
+            mb.spawns.push(room.center());
         }
 
         mb

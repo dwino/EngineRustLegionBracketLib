@@ -14,6 +14,8 @@ mod vornoi;
 pub use vornoi::VornoiArchitect;
 mod full;
 pub use full::EmptyForagingArchitect;
+mod store;
+pub use store::StoreArchitect;
 
 use self::empty::EmptyArchitect;
 
@@ -32,24 +34,24 @@ pub trait MapTheme: Sync + Send {
 pub struct MapBuilder {
     pub map: Map,
     pub rooms: Vec<Rect>,
-    pub monster_spawns: Vec<Point>,
+    pub spawns: Vec<Point>,
     pub player_start: Point,
-    pub amulet_start: Point,
+    pub exit_start: Point,
     pub theme: Box<dyn MapTheme>,
 }
 
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
         let mut architect: Box<dyn MapArchitect> = match rng.range(0, 4) {
-            0 | 1 | 2 => Box::new(EmptyArchitect {}),
-            _ => Box::new(CellularAutomataArchitect {}),
+            0 | 1 | 2 => Box::new(StoreArchitect {}),
+            _ => Box::new(StoreArchitect {}),
         };
         let mut mb = architect.new(rng);
-        apply(&mut mb, rng);
+        // apply(&mut mb, rng);
 
         mb.theme = RootedTheme::new();
 
-        mb.tile_variety(rng);
+        // mb.tile_variety(rng);
 
         mb
     }

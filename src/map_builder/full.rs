@@ -9,14 +9,14 @@ impl MapArchitect for EmptyForagingArchitect {
             map: Map::new(SCREEN_WIDTH, SCREEN_HEIGHT),
             rooms: Vec::new(),
             player_start: Point::zero(),
-            amulet_start: Point::zero(),
-            monster_spawns: Vec::new(),
+            exit_start: Point::zero(),
+            spawns: Vec::new(),
             theme: super::themes::RootedTheme::new(),
         };
         mb.fill(TileType::Floor);
 
         mb.player_start = Point::new(SCREEN_WIDTH / 2, SCREEN_HEIGHT / 2);
-        mb.amulet_start = mb.find_most_distant();
+        mb.exit_start = mb.find_most_distant();
 
         let mut ix = 50;
 
