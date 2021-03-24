@@ -4,6 +4,9 @@ pub struct WantsToMove {
     pub entity: Entity,
     pub destination: Point,
 }
+pub struct WantsToPlace {
+    pub destination: Point,
+}
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub struct WantsToDig {
     pub entity: Entity,

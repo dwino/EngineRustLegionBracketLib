@@ -16,6 +16,7 @@ use crate::prelude::*;
 pub fn input(
     ecs: &mut SubWorld,
     commands: &mut CommandBuffer,
+    #[resource] map: &Map,
     #[resource] key: &Option<VirtualKeyCode>,
 ) {
     let (player_entity, player_pos) = <(Entity, &Point)>::query()
@@ -26,30 +27,70 @@ pub fn input(
 
     if let Some(key) = *key {
         match key {
-            VirtualKeyCode::H => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(-1, 0))
-            }
-            VirtualKeyCode::L => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(1, 0))
-            }
-            VirtualKeyCode::K => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(0, -1))
-            }
-            VirtualKeyCode::J => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(0, 1))
-            }
-            VirtualKeyCode::Y => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(-1, -1))
-            }
-            VirtualKeyCode::U => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(1, -1))
-            }
-            VirtualKeyCode::B => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(-1, 1))
-            }
-            VirtualKeyCode::N => {
-                move_or_attack(ecs, commands, player_entity, player_pos, Point::new(1, 1))
-            }
+            VirtualKeyCode::H => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(-1, 0),
+            ),
+            VirtualKeyCode::L => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(1, 0),
+            ),
+            VirtualKeyCode::K => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(0, -1),
+            ),
+            VirtualKeyCode::J => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(0, 1),
+            ),
+            VirtualKeyCode::Y => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(-1, -1),
+            ),
+            VirtualKeyCode::U => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(1, -1),
+            ),
+            VirtualKeyCode::B => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(-1, 1),
+            ),
+            VirtualKeyCode::N => move_or_place(
+                ecs,
+                commands,
+                map,
+                player_entity,
+                player_pos,
+                Point::new(1, 1),
+            ),
             VirtualKeyCode::Space => wait(commands),
             VirtualKeyCode::G => pick_up_item(ecs, commands, player_entity, player_pos),
             VirtualKeyCode::F => shoot_or_throw(ecs, commands, player_entity),
@@ -68,32 +109,34 @@ pub fn input(
         };
     }
 }
-fn move_or_attack(
+fn move_or_place(
     ecs: &mut SubWorld,
     commands: &mut CommandBuffer,
+    map: &Map,
     player_entity: Entity,
     player_pos: Point,
     delta: Point,
 ) {
     let destination = player_pos + delta;
-    let mut enemies = <(Entity, &Point)>::query().filter(component::<Creature>());
-    let mut hit_something = false;
-    enemies
+    let mut acted = false;
+    let idx = map.point2d_to_index(destination);
+
+    if let Some(item_entity) = <(Entity, &Item, &Point)>::query()
         .iter(ecs)
-        .filter(|(_, pos)| **pos == destination)
-        .for_each(|(entity, _)| {
-            hit_something = true;
+        .filter(|(_entity, _item, &item_pos)| item_pos == destination)
+        .find_map(|(item_entity, _item, _item_pos)| Some(item_entity))
+    {
+        commands.remove_component::<Point>(*item_entity);
+        commands.add_component(*item_entity, Carried(player_entity));
+        send_end_input_message(commands, SmState::EmployeeTurn);
+        acted = true;
+    }
 
-            commands.push((
-                (),
-                WantsToAttack {
-                    attacker: player_entity,
-                    victim: *entity,
-                },
-            ));
-        });
+    if !acted && map.tiles[idx] == TileType::Wall {
+        commands.push(((), WantsToPlace { destination }));
+    }
 
-    if !hit_something {
+    if !acted {
         commands.push((
             (),
             WantsToMove {
@@ -102,7 +145,6 @@ fn move_or_attack(
             },
         ));
     }
-    //Check again in movement or combat systems
     send_end_input_message(commands, SmState::EmployeeTurn);
 }
 

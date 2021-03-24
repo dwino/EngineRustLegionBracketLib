@@ -5,5 +5,6 @@ pub mod hud;
 pub mod input;
 pub mod map_render;
 pub mod movement;
+pub mod placement;
 pub mod tooltips;
 pub mod use_items;

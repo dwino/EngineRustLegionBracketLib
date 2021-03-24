@@ -97,8 +97,8 @@ impl State {
         self.resources = Resources::default();
         let mut rng = RandomNumberGenerator::new();
         let mut map_builder = MapBuilder::new(&mut rng);
-        spawn_player(&mut self.ecs, map_builder.player_start);
-        spawn_level(&mut self.ecs, &mut rng, 0, &map_builder.spawns);
+        spawn_employee(&mut self.ecs, map_builder.player_start);
+        spawn_store_level(&mut self.ecs, &mut rng, 0, &map_builder.spawns);
         self.resources.insert(map_builder.map);
         self.resources
             .insert(RlCamera::new(map_builder.player_start));
@@ -135,74 +135,74 @@ impl State {
                 self.sm_victory(ctx);
             }
             SmState::NextLevel => {
-                self.sm_advance_level();
+                // self.sm_advance_level();
             }
         }
         render_draw_buffer(ctx).expect("Render error");
     }
 
-    fn sm_advance_level(&mut self) {
-        let player_entity = *<Entity>::query()
-            .filter(component::<Player>())
-            .iter(&self.ecs)
-            .next()
-            .unwrap();
+    // fn sm_advance_level(&mut self) {
+    //     let player_entity = *<Entity>::query()
+    //         .filter(component::<Player>())
+    //         .iter(&self.ecs)
+    //         .next()
+    //         .unwrap();
 
-        let mut entities_to_keep = HashSet::new();
-        entities_to_keep.insert(player_entity);
-        <(Entity, &Carried)>::query()
-            .iter(&self.ecs)
-            .filter(|(_e, carry)| carry.0 == player_entity)
-            .map(|(e, _carry)| *e)
-            .for_each(|e| {
-                entities_to_keep.insert(e);
-            });
-        <(Entity, &Equiped)>::query()
-            .iter(&self.ecs)
-            .filter(|(_e, carry)| carry.0 == player_entity)
-            .map(|(e, _carry)| *e)
-            .for_each(|e| {
-                entities_to_keep.insert(e);
-            });
+    //     let mut entities_to_keep = HashSet::new();
+    //     entities_to_keep.insert(player_entity);
+    //     <(Entity, &Carried)>::query()
+    //         .iter(&self.ecs)
+    //         .filter(|(_e, carry)| carry.0 == player_entity)
+    //         .map(|(e, _carry)| *e)
+    //         .for_each(|e| {
+    //             entities_to_keep.insert(e);
+    //         });
+    //     <(Entity, &Equiped)>::query()
+    //         .iter(&self.ecs)
+    //         .filter(|(_e, carry)| carry.0 == player_entity)
+    //         .map(|(e, _carry)| *e)
+    //         .for_each(|e| {
+    //             entities_to_keep.insert(e);
+    //         });
 
-        let mut cb = CommandBuffer::new(&self.ecs);
-        for e in Entity::query().iter(&self.ecs) {
-            if !entities_to_keep.contains(e) {
-                cb.remove(*e);
-            }
-        }
-        cb.flush(&mut self.ecs);
+    //     let mut cb = CommandBuffer::new(&self.ecs);
+    //     for e in Entity::query().iter(&self.ecs) {
+    //         if !entities_to_keep.contains(e) {
+    //             cb.remove(*e);
+    //         }
+    //     }
+    //     cb.flush(&mut self.ecs);
 
-        <&mut FieldOfView>::query()
-            .iter_mut(&mut self.ecs)
-            .for_each(|fov| {
-                fov.is_dirty = true;
-                fov.sensing = false;
-            });
+    //     <&mut FieldOfView>::query()
+    //         .iter_mut(&mut self.ecs)
+    //         .for_each(|fov| {
+    //             fov.is_dirty = true;
+    //             fov.sensing = false;
+    //         });
 
-        let mut rng = RandomNumberGenerator::new();
-        let mut map_builder = MapBuilder::new(&mut rng);
-        let mut map_level = 0;
-        <(&mut Player, &mut Point)>::query()
-            .iter_mut(&mut self.ecs)
-            .for_each(|(player, pos)| {
-                player.map_level += 1;
-                map_level = player.map_level;
-                pos.x = map_builder.player_start.x;
-                pos.y = map_builder.player_start.y;
-            });
-        spawn_level(
-            &mut self.ecs,
-            &mut rng,
-            map_level as usize,
-            &map_builder.spawns,
-        );
-        self.resources.insert(map_builder.map);
-        self.resources
-            .insert(RlCamera::new(map_builder.player_start));
-        self.resources.insert(SmState::AwaitingInput);
-        self.resources.insert(map_builder.theme);
-    }
+    //     let mut rng = RandomNumberGenerator::new();
+    //     let mut map_builder = MapBuilder::new(&mut rng);
+    //     let mut map_level = 0;
+    //     <(&mut Player, &mut Point)>::query()
+    //         .iter_mut(&mut self.ecs)
+    //         .for_each(|(player, pos)| {
+    //             player.map_level += 1;
+    //             map_level = player.map_level;
+    //             pos.x = map_builder.player_start.x;
+    //             pos.y = map_builder.player_start.y;
+    //         });
+    //     spawn_level(
+    //         &mut self.ecs,
+    //         &mut rng,
+    //         map_level as usize,
+    //         &map_builder.spawns,
+    //     );
+    //     self.resources.insert(map_builder.map);
+    //     self.resources
+    //         .insert(RlCamera::new(map_builder.player_start));
+    //     self.resources.insert(SmState::AwaitingInput);
+    //     self.resources.insert(map_builder.theme);
+    // }
 
     fn sm_game_over(&mut self, ctx: &mut BTerm) {
         ctx.set_active_console(2);

@@ -1,0 +1,8 @@
+SmTemplates(
+    entities : [
+        SmTemplate(
+            entity_type: Produce,
+            name : "apple", glyph : 'a', color : "#D3494E",
+        ),
+    ],
+)

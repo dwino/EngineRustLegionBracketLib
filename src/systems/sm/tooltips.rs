@@ -13,10 +13,9 @@ pub fn tooltips(ecs: &SubWorld, #[resource] mouse_pos: &Point, #[resource] camer
     let map_pos = *mouse_pos + offset;
     let mut draw_batch = DrawBatch::new();
     draw_batch.target(2);
-    let player_fov = fov.iter(ecs).next().unwrap();
     positions
         .iter(ecs)
-        .filter(|(_, pos, _)| **pos == map_pos && player_fov.visible_tiles.contains(&pos))
+        .filter(|(_, pos, _)| **pos == map_pos)
         .for_each(|(entity, _, name)| {
             let screen_pos = *mouse_pos * TOOLTIP_SCALE;
             let display =

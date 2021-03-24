@@ -25,6 +25,7 @@ pub fn build_sm_employee_scheduler() -> Schedule {
         .add_system(sm::use_items::use_items_system())
         .flush()
         .add_system(sm::movement::movement_system())
+        .add_system(sm::placement::placement_system())
         .flush()
         .add_system(sm::map_render::map_render_system())
         .add_system(sm::entity_render::entity_render_system())
