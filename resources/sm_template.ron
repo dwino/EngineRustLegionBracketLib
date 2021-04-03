@@ -4,5 +4,13 @@ SmTemplates(
             entity_type: Produce,
             name : "apple", glyph : 'a', color : "#D3494E",
         ),
+        SmTemplate(
+            entity_type: Produce,
+            name : "pear", glyph : 'p', color : "#71AA34",
+        ),
+        SmTemplate(
+            entity_type: Produce,
+            name : "bannana", glyph : 'b', color : "#E3CF57",
+        ),
     ],
 )

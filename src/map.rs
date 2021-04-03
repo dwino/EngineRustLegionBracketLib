@@ -4,6 +4,7 @@ const NUM_TILES: usize = (SCREEN_WIDTH * SCREEN_HEIGHT) as usize;
 
 #[derive(Copy, Clone, PartialEq)]
 pub enum TileType {
+    Shelve,
     Wall,
     WallVar1,
     WallVar2,

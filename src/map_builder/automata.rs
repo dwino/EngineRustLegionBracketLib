@@ -18,7 +18,7 @@ impl MapArchitect for CellularAutomataArchitect {
             iteration(&mut mb.map);
         }
         let start = find_start(&mb.map);
-        mb.spawns = mb.spawn_monsters(start, rng);
+        mb.spawns = mb.spawns(start, rng);
         mb.player_start = start;
         mb.exit_start = mb.find_most_distant();
         mb

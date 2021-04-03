@@ -102,7 +102,6 @@ fn move_or_attack(
             },
         ));
     }
-    //Check again in movement or combat systems
     send_end_input_message(commands, RlState::PlayerTurn);
 }
 

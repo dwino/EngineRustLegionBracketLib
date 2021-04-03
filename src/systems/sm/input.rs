@@ -27,7 +27,7 @@ pub fn input(
 
     if let Some(key) = *key {
         match key {
-            VirtualKeyCode::H => move_or_place(
+            VirtualKeyCode::H | VirtualKeyCode::Left => move_or_place(
                 ecs,
                 commands,
                 map,
@@ -35,7 +35,7 @@ pub fn input(
                 player_pos,
                 Point::new(-1, 0),
             ),
-            VirtualKeyCode::L => move_or_place(
+            VirtualKeyCode::L | VirtualKeyCode::Right => move_or_place(
                 ecs,
                 commands,
                 map,
@@ -43,7 +43,7 @@ pub fn input(
                 player_pos,
                 Point::new(1, 0),
             ),
-            VirtualKeyCode::K => move_or_place(
+            VirtualKeyCode::K | VirtualKeyCode::Up => move_or_place(
                 ecs,
                 commands,
                 map,
@@ -51,7 +51,7 @@ pub fn input(
                 player_pos,
                 Point::new(0, -1),
             ),
-            VirtualKeyCode::J => move_or_place(
+            VirtualKeyCode::J | VirtualKeyCode::Down => move_or_place(
                 ecs,
                 commands,
                 map,
@@ -132,8 +132,9 @@ fn move_or_place(
         acted = true;
     }
 
-    if !acted && map.tiles[idx] == TileType::Wall {
+    if !acted && map.tiles[idx] == TileType::Shelve {
         commands.push(((), WantsToPlace { destination }));
+        acted = true;
     }
 
     if !acted {

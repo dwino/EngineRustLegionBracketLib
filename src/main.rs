@@ -22,8 +22,8 @@ mod prelude {
     pub use legion::*;
     pub const SCREEN_WIDTH: i32 = 80;
     pub const SCREEN_HEIGHT: i32 = 50;
-    pub const DISPLAY_WIDTH: i32 = 80;
-    pub const DISPLAY_HEIGHT: i32 = 50;
+    pub const DISPLAY_WIDTH: i32 = SCREEN_WIDTH;
+    pub const DISPLAY_HEIGHT: i32 = SCREEN_HEIGHT;
     pub const TILE_DIMENSIONS_MAP: i32 = 13;
     pub const TILE_DIMENSIONS_TOOLTIP: i32 = TILE_DIMENSIONS_MAP / 2;
     pub const TOOLTIP_SCALE: i32 = TILE_DIMENSIONS_MAP / TILE_DIMENSIONS_TOOLTIP;

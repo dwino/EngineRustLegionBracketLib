@@ -58,7 +58,7 @@ impl MapArchitect for VornoiArchitect {
         }
 
         let start = find_start();
-        mb.spawns = mb.spawn_monsters(start, rng);
+        mb.spawns = mb.spawns(start, rng);
         mb
     }
 }
