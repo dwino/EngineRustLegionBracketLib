@@ -29,7 +29,7 @@ pub fn spawn_entities(
             },
             Name("Nest".to_string()),
             Energy {
-                current: 50,
+                current: 115,
                 max: 100,
             },
             SpawningForager {},

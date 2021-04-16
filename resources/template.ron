@@ -1,0 +1,148 @@
+Templates(
+    entities : [
+        Template(
+            entity_type: Plant,
+            fruit_type: Some(Healing),
+            name : "Healing Tree", glyph : '♠', color : "#D3494E", levels : [ 0, 1, 2 ],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            fruit_type: Some(Knowing),
+            name : "Knowing Tree", glyph : '♠', color : "#7AC5CD", levels : [ 0, 1, 2],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            fruit_type: Some(Sensing),
+            name : "Sensing Tree", glyph : '♠', color : "#71AA34", levels : [0, 1, 2 ],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            equipment_type: Some(Ranged),
+            name : "Ranged Sapling", glyph : '%', color : "#5D76CB", levels : [ 0, 1],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            equipment_type: Some(Melee),
+            name : "Melee Sapling", glyph : '⌠', color : "#D3494E", levels : [ 0, 1],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            equipment_type: Some(Armour),
+            name : "Armour Sapling", glyph : '♣', color : "#215E21", levels : [ 0, 1],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            equipment_type: Some(RangedPlus),
+            name : "Ranged Bush", glyph : '%', color : "#5D76CB", levels : [0, 1, 2 ],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            equipment_type: Some(MeleePlus),
+            name : "Melee Tree", glyph : '⌠', color : "#D3494E", levels : [1, 2 ],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Plant,
+            equipment_type: Some(ArmourPlus),
+            name : "Armour Tree", glyph : '♣', color : "#814D30", levels : [1, 2 ],
+            frequency: 1,
+        ),
+        Template(
+            entity_type: Creature,
+            name : "Worm Mass:hp:4-dam:2-def:1", glyph : 'w', color : "#CD7F32", levels : [ 0, 1],
+            hp : Some(4),
+            frequency: 1,
+            ai_type: Some(MovingRandomly),
+            base_damage: Some(2),
+            base_defense: Some(1)
+
+        ),
+        Template(
+            entity_type: Creature,
+            name : "Ant:hp:2-dam:2-def:0", glyph : 'a', color : "#E3CF57", levels : [ 0, 1, 2 ],
+            hp : Some(2),
+            frequency: 1,
+            ai_type: Some(AntAi),
+            base_damage: Some(2),
+        ),
+        Template(
+            entity_type: Creature,
+            name : "Rat:hp:6-dam:3-def:2", glyph : 'r', color : "#D3494E", levels : [ 1, 2 ],
+            hp : Some(6),
+            frequency: 1,
+            ai_type: Some(RatAi),
+            base_damage: Some(3),
+            base_defense: Some(2),
+
+        ),
+    ],
+    fruits : {
+        Healing: (
+            entity_type: Fruit,
+            name : "Healing Fruit", glyph : '*', color : "#D3494E", levels : [],
+            provides: Some([ ("Healing", 7) ]),
+            frequency: 1,
+        ),
+        Knowing: (
+            entity_type: Fruit,
+            name : "Knowing Fruit", glyph : '*', color : "#7AC5CD", levels : [],
+            provides: Some([ ("MagicMap", 0) ]),
+            frequency: 1
+        ),
+        Sensing: (
+            entity_type: Fruit,
+            name : "Sensing Fruit", glyph : '*', color : "#71AA34", levels : [],
+            provides: Some([ ("Sensing", 0) ]),
+            frequency: 1
+        ), 
+    },
+    equipments : {
+        Ranged: (
+            entity_type: Equipment,
+            name : "Thorn Dart:dam:1", glyph: '{', color : "#D7E7D0", levels: [],
+            frequency: 1,
+            base_ranged_damage: Some(1),
+        ),
+        
+        Melee: (
+            entity_type: Equipment,
+            name : "Pointy Stick:dam:2", glyph: '/', color : "#D7E7D0", levels: [],
+            frequency: 1,
+            base_damage: Some(2)
+        ),
+        
+        Armour: (
+            entity_type: Equipment,
+            name : "Leaf Shield:def:1" , glyph: ')', color : "#71AA34", levels: [],
+            frequency: 1,
+            base_defense: Some(1),
+
+        ),
+        RangedPlus:(
+            entity_type: Equipment,
+            name : "Poisonous Thorn Dart:dam:3", glyph: '{', color : "#333366", levels: [1, 2 ],
+            frequency: 1,
+            base_ranged_damage: Some(3),
+        ),
+        MeleePlus:(
+            entity_type: Equipment,
+            name : "Heavy Staff:dam:3", glyph: '|', color : "#D7E7D0", levels: [ 1, 2 ],
+            frequency: 1,
+            base_damage: Some(3)
+        ),
+        ArmourPlus:(
+            entity_type: Equipment,
+            name : "Bark Shield::def:2" , glyph: ']', color : "#814D30", levels: [ 1, 2 ],
+            frequency: 1,
+            base_defense: Some(2),
+
+        ), 
+    },
+)

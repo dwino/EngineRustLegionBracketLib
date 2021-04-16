@@ -1,7 +1,6 @@
 #![warn(clippy::pedantic)]
 use std::collections::HashSet;
 
-mod camera;
 mod components;
 mod dkm;
 mod eco_camera;
@@ -10,7 +9,9 @@ mod forage_map;
 mod game_mode;
 mod map;
 mod map_builder;
+mod rl_camera;
 mod rl_state;
+mod sm_state;
 mod spawner;
 mod systems;
 
@@ -26,7 +27,6 @@ mod prelude {
     pub const TILE_DIMENSIONS_MAP: i32 = 13;
     pub const TILE_DIMENSIONS_TOOLTIP: i32 = TILE_DIMENSIONS_MAP / 2;
     pub const TOOLTIP_SCALE: i32 = TILE_DIMENSIONS_MAP / TILE_DIMENSIONS_TOOLTIP;
-    pub use crate::camera::*;
     pub use crate::components::*;
     pub use crate::dkm::*;
     pub use crate::eco_camera::*;
@@ -35,7 +35,9 @@ mod prelude {
     pub use crate::game_mode::*;
     pub use crate::map::*;
     pub use crate::map_builder::*;
+    pub use crate::rl_camera::*;
     pub use crate::rl_state::*;
+    pub use crate::sm_state::*;
     pub use crate::spawner::FruitType;
     pub use crate::spawner::*;
     pub use crate::systems::*;
@@ -108,11 +110,12 @@ impl State {
         let mut rng = RandomNumberGenerator::new();
         let mut map_builder = MapBuilder::new(&mut rng);
         spawn_player(&mut self.ecs, map_builder.player_start);
-        let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
+        let exit_idx = map_builder.map.point2d_to_index(map_builder.exit_start);
         map_builder.map.tiles[exit_idx] = TileType::Exit;
-        spawn_level(&mut self.ecs, &mut rng, 0, &map_builder.monster_spawns);
+        spawn_level(&mut self.ecs, &mut rng, 0, &map_builder.spawns);
         self.resources.insert(map_builder.map);
-        self.resources.insert(Camera::new(map_builder.player_start));
+        self.resources
+            .insert(RlCamera::new(map_builder.player_start));
         self.resources.insert(RlState::AwaitingInput);
         self.resources.insert(map_builder.theme);
     }
@@ -203,19 +206,20 @@ impl State {
                 pos.y = map_builder.player_start.y;
             });
         if map_level == 2 {
-            spawn_magic_droplet(&mut self.ecs, map_builder.amulet_start);
+            spawn_magic_droplet(&mut self.ecs, map_builder.exit_start);
         } else {
-            let exit_idx = map_builder.map.point2d_to_index(map_builder.amulet_start);
+            let exit_idx = map_builder.map.point2d_to_index(map_builder.exit_start);
             map_builder.map.tiles[exit_idx] = TileType::Exit;
         }
         spawn_level(
             &mut self.ecs,
             &mut rng,
             map_level as usize,
-            &map_builder.monster_spawns,
+            &map_builder.spawns,
         );
         self.resources.insert(map_builder.map);
-        self.resources.insert(Camera::new(map_builder.player_start));
+        self.resources
+            .insert(RlCamera::new(map_builder.player_start));
         self.resources.insert(RlState::AwaitingInput);
         self.resources.insert(map_builder.theme);
     }

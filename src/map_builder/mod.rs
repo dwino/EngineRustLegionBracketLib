@@ -12,8 +12,8 @@ mod themes;
 pub use themes::*;
 mod vornoi;
 pub use vornoi::VornoiArchitect;
-mod full;
-pub use full::EmptyForagingArchitect;
+mod forage_test;
+pub use forage_test::EmptyForagingArchitect;
 mod store;
 pub use store::StoreArchitect;
 
@@ -43,8 +43,8 @@ pub struct MapBuilder {
 impl MapBuilder {
     pub fn new(rng: &mut RandomNumberGenerator) -> Self {
         let mut architect: Box<dyn MapArchitect> = match rng.range(0, 4) {
-            0 | 1 | 2 => Box::new(StoreArchitect {}),
-            _ => Box::new(StoreArchitect {}),
+            0 | 1 | 2 => Box::new(EmptyForagingArchitect {}),
+            _ => Box::new(EmptyForagingArchitect {}),
         };
         let mut mb = architect.new(rng);
         // apply(&mut mb, rng);
